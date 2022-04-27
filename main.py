@@ -1,5 +1,8 @@
+from test_cli_handler import CliHandler
+
+
 def main():
-    print("Something coming up very very soon...")
+    cli_handler = CliHandler().run()
 
 
 if __name__ == "__main__":
