@@ -1,0 +1,1 @@
+This project is used to scrap the required data from the www.internshala.com website.
