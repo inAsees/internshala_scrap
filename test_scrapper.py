@@ -50,34 +50,35 @@ class ScrapInternshala:
         for url in self._python_internship_page_url:
             self._scrap_url(url)
 
-    def dump(self, file_path: str):
+    def dump(self, file_path: str) -> None:
         with open(file_path, "w", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(f,
-                                    fieldnames=["job_title", "company", "lump_sum_per_month", "incentive",
-                                                "duration_in_days", "location", "apply_by", "applicants",
-                                                "number_of_openings",
-                                                "skill_set", "perks", "src_url", ])
+            writer = csv.DictWriter(f, fieldnames=["job_title", "company", "lump_sum_per_month", "incentive",
+                                                   "duration_in_days", "location", "apply_by", "applicants",
+                                                   "number_of_openings", "skill_set", "perks", "src_url", ])
             writer.writeheader()
-            for ele in tqdm(self._company_info_list, desc="Dumping..."):
-                writer.writerow(
-                    {"job_title": ele.job_title,
-                     "company": ele.company,
-                     "lump_sum_per_month": ele.lump_sum_per_month,
-                     "incentive": ele.incentive,
-                     "duration_in_days": ele.duration,
-                     "location": ele.location,
-                     "apply_by": ele.apply_by,
-                     "applicants": ele.applicants,
-                     "number_of_openings": ele.number_of_openings,
-                     "skill_set": ele.skill_set,
-                     "perks": ele.perks,
-                     "src_url": ele.link})
+            self._write_file(writer)
 
     @staticmethod
     def _get_total_pages(url: str) -> int:
         page_src = req.get(url).text
         page_soup = bs(page_src, "html.parser")
         return int(page_soup.find("span", {"id": "total_pages"}).text)
+
+    def _write_file(self, writer: DictWriter) -> None:
+        for ele in tqdm(self._company_info_list, desc="Dumping..."):
+            writer.writerow(
+                {"job_title": ele.job_title,
+                 "company": ele.company,
+                 "lump_sum_per_month": ele.lump_sum_per_month,
+                 "incentive": ele.incentive,
+                 "duration_in_days": ele.duration_in_days,
+                 "location": ele.location,
+                 "apply_by": ele.apply_by,
+                 "applicants": ele.applicants,
+                 "number_of_openings": ele.number_of_openings,
+                 "skill_set": ele.skill_set,
+                 "perks": ele.perks,
+                 "src_url": ele.src_url})
 
     def _scrap_url(self, url: str) -> None:
         page_src = req.get(url).text
@@ -106,7 +107,7 @@ class ScrapInternshala:
         perks = cls._get_perks(company_soup)
         src_url = detail_url
 
-        print(company, job_title, duration_in_days, applicants, skill_set)
+        print(duration_in_days, applicants, skill_set)
 
         return CompanyInfo(job_title, company, stipend, incentive, duration_in_days, location, apply_by, applicants,
                            number_of_openings, skill_set, perks, src_url)
