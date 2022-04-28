@@ -1,8 +1,8 @@
-from test_cli_handler import CliHandler
+from tests.cli_handler import CliHandler
 
 
 def main():
-    cli_handler = CliHandler().run()
+    CliHandler().run()
 
 
 if __name__ == "__main__":
