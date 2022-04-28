@@ -7,7 +7,9 @@ class CliHandler:
 
     @staticmethod
     def run():
-        print("<<<<Welcome Message>>>>")  # To Do.
+        print("<<<<Welcome Message>>>>\n"
+              "This program will help you to scrap data from www.internshala.com website and write it into CSV file in"
+              "your local system.")
         print("Pick one job title from the available list using index number adjacent to it.")
         available_keywords = get_available_keywords()
 
