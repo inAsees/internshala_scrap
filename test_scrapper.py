@@ -7,6 +7,19 @@ from bs4.element import ResultSet
 from tqdm import tqdm
 
 
+def get_available_keywords() -> list[str]:
+    available_keywords = ["Web Development", "Mobile App Development", "Full Stack Development",
+                          "Flutter Development", "WordPress Development", "Backend Development",
+                          "Android App Development", "Software Development", "Python Development",
+                          "Software Testing", "PHP Development", "Java Development", "React Native Development",
+                          "Front End Development", "Node.js Development", "ReactJS Development",
+                          ".NET Development", "Product Management", "Blockchain Development",
+                          "Django Development", "iOS App Development", "Machine Learning",
+                          "Artificial Intelligence (AI)", "MERN Stack Development", "Quality Assurance",
+                          "Web Design", "Cyber Security", ]
+    return available_keywords
+
+
 @dataclass
 class CompanyInfo:
     job_title: str
