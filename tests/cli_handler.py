@@ -1,4 +1,4 @@
-from test_scrapper import ScrapInternshala, get_available_keywords
+from scrapper import ScrapInternshala, get_available_keywords
 
 
 class CliHandler:
@@ -12,7 +12,6 @@ class CliHandler:
               "your local system.")
         print("Pick one job title from the available list using index number adjacent to it.")
         available_keywords = get_available_keywords()
-
         print("Index  Job title")
         for i in range(len(available_keywords)):
             print("{0}--->  {1}".format(i, available_keywords[i]))
