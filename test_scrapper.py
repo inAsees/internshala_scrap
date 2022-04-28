@@ -1,4 +1,5 @@
 import csv
+from csv import DictWriter
 from dataclasses import dataclass
 from typing import List
 import requests as req
@@ -213,9 +214,3 @@ class ScrapInternshala:
             if "Months" in duration.text or "Month" in duration.text:
                 duration = duration.text.split()
                 return int(duration[0]) * 30
-
-
-if __name__ == "__main__":
-    scrapper = ScrapInternshala()
-    scrapper.scrap_all_pages()
-    scrapper.dump(r"C:\Users\DELL\Desktop\scrap_key_python.csv")
