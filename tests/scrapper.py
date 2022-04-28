@@ -6,6 +6,8 @@ import requests as req
 from bs4 import BeautifulSoup as bs
 from bs4.element import ResultSet
 from tqdm import tqdm
+from pathlib import Path
+from typing import Optional
 
 
 def get_available_keywords() -> list[str]:
@@ -19,6 +21,17 @@ def get_available_keywords() -> list[str]:
                           "Artificial Intelligence (AI)", "MERN Stack Development", "Quality Assurance",
                           "Web Design", "Cyber Security", ]
     return available_keywords
+
+
+def is_file_path_exists(file_path: str) -> Optional[bool]:
+    path = Path(file_path)
+    if path.exists():
+        if path.suffix == ".csv":
+            return True
+        else:
+            return None
+    else:
+        return False
 
 
 @dataclass
