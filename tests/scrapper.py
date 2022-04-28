@@ -85,7 +85,7 @@ class ScrapInternshala:
         page_soup = bs(page_src, "html.parser")
         companies_box = page_soup.findAll("a", {"class": "view_detail_button"})
 
-        for company in tqdm(companies_box, desc="Scrapping companies..."):
+        for company in companies_box:
             details_url = self._base_url + company["href"]
             company_details_src = req.get(details_url).text
             company_details_soup = bs(company_details_src, "html.parser")
