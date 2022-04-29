@@ -5,7 +5,7 @@ from typing import List
 import requests as req
 from bs4 import BeautifulSoup as bs
 from bs4.element import ResultSet
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from pathlib import Path
 from typing import Optional
 
@@ -13,15 +13,16 @@ from typing import Optional
 def get_available_keywords() -> list[str]:
     available_keywords = ["Computer Science", ".NET Development", "Android App Development", "Angular.js Development",
                           "Artificial Intelligence (AI)", "ASP.NET Development", "Backend Development", "Big Data",
-                          "Blockchain Development", "Cloud Computing", "Computer Vision",
-                          "Cyber Security", "Data Entry", "Data Science", "Database Building", "Flutter Development",
+                          "Blockchain Development", "Cloud Computing", "Computer Vision", "Cyber Security",
+                          "Data Entry", "Data Science", "Database Building", "Flutter Development",
                           "Front End Development", "Full Stack Development", "Image Processing",
-                          "Internet of Things (IoT)", "iOS App Development", "Java Development",
-                          "Javascript Development", "Machine Learning", "Mobile App Development", "Node.js Development",
-                          "Network Engineering", "PHP Development", "Programming", "Python/Django Development",
-                          "Software Development", "Software Testing", "UI/UX Design", "Web Development",
-                          "Wordpress Development", "React Native Development", "ReactJS Development",
-                          "Product Management", "MERN Stack Development", "Quality Assurance", "Web Design"]
+                          "iOS App Development", "Java Development", "Javascript Development", "Machine Learning",
+                          "Mobile App Development", "Node.js Development", "Network Engineering", "PHP Development",
+                          "Programming", "Python Development", "Django Development", "Software Development",
+                          "Software Testing", "UI/UX Design", "Web Development", "Wordpress Development",
+                          "React Native Development", "ReactJS Development", "Product Management",
+                          "MERN Stack Development", "Quality Assurance", "Web Design", "Internet of Things (IoT)", ]
+
     return sorted(available_keywords)
 
 
@@ -86,8 +87,10 @@ class ScrapInternshala:
         self._company_info_list = []  # type: List[CompanyInfo]
 
     def scrap_all_pages(self) -> None:
+        page_no = 1
         for url in self._python_internship_page_url:
-            self._scrap_url(url)
+            self._scrap_url(url, page_no)
+            page_no += 1
 
     def dump(self, file_path: str) -> None:
         with open(file_path, "w", encoding="utf-8", newline="") as f:
@@ -119,12 +122,12 @@ class ScrapInternshala:
                  "perks": ele.perks,
                  "src_url": ele.src_url})
 
-    def _scrap_url(self, url: str) -> None:
+    def _scrap_url(self, url: str, page_no: int) -> None:
         page_src = req.get(url).text
         page_soup = bs(page_src, "html.parser")
         companies_box = page_soup.findAll("a", {"class": "view_detail_button"})
 
-        for company in companies_box:
+        for company in tqdm(companies_box, desc="Scrapping page {} companies.".format(page_no)):
             details_url = self._base_url + company["href"]
             company_details_src = req.get(details_url).text
             company_details_soup = bs(company_details_src, "html.parser")
@@ -145,8 +148,6 @@ class ScrapInternshala:
         skill_set = cls._get_skills_set(company_soup)
         perks = cls._get_perks(company_soup)
         src_url = detail_url
-
-        print(duration_in_days, applicants, skill_set)
 
         return CompanyInfo(job_title, company, stipend, incentive, duration_in_days, location, apply_by, applicants,
                            number_of_openings, skill_set, perks, src_url)
