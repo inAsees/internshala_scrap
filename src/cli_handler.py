@@ -35,10 +35,6 @@ class CliHandler:
               " file name.\n")
 
         while self._attempt_handling.is_cur_attempt_less_than_max_attempt():
-            if self._attempt_handling.is_cur_attempt_equals_last_attempt():
-                print("Too many wrong attempts.\n"
-                      "Program stopped.")
-                quit()
             file_path = input("Enter the path:  ")
             if is_file_path_exists(file_path):
                 print("This file already exists!!!.")
@@ -68,6 +64,8 @@ class CliHandler:
                       "File suffix should be '.csv'")
                 self._attempt_handling.increment_cur_attempt()
                 continue
-
             print("Invalid path!!")
             self._attempt_handling.increment_cur_attempt()
+        print("Too many wrong attempts.\n"
+              "Program stopped.")
+        quit()
