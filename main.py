@@ -1,4 +1,4 @@
-from tests.cli_handler import CliHandler
+from src.cli_handler import CliHandler
 
 
 def main():
