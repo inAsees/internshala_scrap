@@ -11,16 +11,18 @@ from typing import Optional
 
 
 def get_available_keywords() -> list[str]:
-    available_keywords = ["Web Development", "Mobile App Development", "Full Stack Development",
-                          "Flutter Development", "WordPress Development", "Backend Development",
-                          "Android App Development", "Software Development", "Python Development",
-                          "Software Testing", "PHP Development", "Java Development", "React Native Development",
-                          "Front End Development", "Node.js Development", "ReactJS Development",
-                          ".NET Development", "Product Management", "Blockchain Development",
-                          "Django Development", "iOS App Development", "Machine Learning",
-                          "Artificial Intelligence (AI)", "MERN Stack Development", "Quality Assurance",
-                          "Web Design", "Cyber Security", ]
-    return available_keywords
+    available_keywords = ["Computer Science", ".NET Development", "Android App Development", "Angular.js Development",
+                          "Artificial Intelligence (AI)", "ASP.NET Development", "Backend Development", "Big Data",
+                          "Blockchain Development", "Cloud Computing", "Computer Vision",
+                          "Cyber Security", "Data Entry", "Data Science", "Database Building", "Flutter Development",
+                          "Front End Development", "Full Stack Development", "Image Processing",
+                          "Internet of Things (IoT)", "iOS App Development", "Java Development",
+                          "Javascript Development", "Machine Learning", "Mobile App Development", "Node.js Development",
+                          "Network Engineering", "PHP Development", "Programming", "Python/Django Development",
+                          "Software Development", "Software Testing", "UI/UX Design", "Web Development",
+                          "Wordpress Development", "React Native Development", "ReactJS Development",
+                          "Product Management", "MERN Stack Development", "Quality Assurance", "Web Design"]
+    return sorted(available_keywords)
 
 
 class AttemptsHandling:
