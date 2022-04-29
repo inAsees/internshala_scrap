@@ -6,6 +6,59 @@ import requests as req
 from bs4 import BeautifulSoup as bs
 from bs4.element import ResultSet
 from tqdm import tqdm
+from pathlib import Path
+from typing import Optional
+
+
+def get_available_keywords() -> list[str]:
+    available_keywords = ["Computer Science", ".NET Development", "Android App Development", "Angular.js Development",
+                          "Artificial Intelligence (AI)", "ASP.NET Development", "Backend Development", "Big Data",
+                          "Blockchain Development", "Cloud Computing", "Computer Vision", "Cyber Security",
+                          "Data Entry", "Data Science", "Database Building", "Flutter Development",
+                          "Front End Development", "Full Stack Development", "Image Processing",
+                          "iOS App Development", "Java Development", "Javascript Development", "Machine Learning",
+                          "Mobile App Development", "Node.js Development", "Network Engineering", "PHP Development",
+                          "Programming", "Python Development", "Django Development", "Software Development",
+                          "Software Testing", "UI/UX Design", "Web Development", "Wordpress Development",
+                          "React Native Development", "ReactJS Development", "Product Management",
+                          "MERN Stack Development", "Quality Assurance", "Web Design", "Internet of Things (IoT)", ]
+
+    return sorted(available_keywords)
+
+
+class AttemptsHandling:
+    def __init__(self):
+        self._max_attempt = 5
+        self._cur_attempt = 0
+
+    def increment_cur_attempt(self) -> None:
+        self._cur_attempt += 1
+
+    def is_cur_attempt_equals_last_attempt(self) -> bool:
+        return self._cur_attempt == self._max_attempt
+
+    def is_cur_attempt_less_than_max_attempt(self):
+        return self._cur_attempt <= self._max_attempt
+
+
+def is_file_parent_exists(file_path: str) -> Optional[bool]:
+    path = Path(file_path)
+    if path.parent.exists():
+        if path.suffix == ".csv":
+            return True
+        else:
+            return None
+    return False
+
+
+def is_file_path_exists(file_path: str) -> Optional[bool]:
+    path = Path(file_path)
+    if path.exists():
+        if path.suffix == ".csv":
+            return True
+        else:
+            return None
+    return False
 
 
 @dataclass
@@ -25,16 +78,19 @@ class CompanyInfo:
 
 
 class ScrapInternshala:
-    def __init__(self):
+    def __init__(self, keyword_search: str):
         self._base_url = "https://internshala.com"
-        _python_intern_page = "internships/keywords-python"
+        _python_intern_page = "internships/keywords-{}".format(keyword_search)
+        _total_pages = self._get_total_pages("{}/{}/page-1".format(self._base_url, _python_intern_page))
         self._python_internship_page_url = ["{}/{}/page-{}".format(self._base_url, _python_intern_page, i) for i in
-                                            range(1, 3)]
+                                            range(1, _total_pages + 1)]
         self._company_info_list = []  # type: List[CompanyInfo]
 
     def scrap_all_pages(self) -> None:
+        page_no = 1
         for url in self._python_internship_page_url:
-            self._scrap_url(url)
+            self._scrap_url(url, page_no)
+            page_no += 1
 
     def dump(self, file_path: str) -> None:
         with open(file_path, "w", encoding="utf-8", newline="") as f:
@@ -43,6 +99,12 @@ class ScrapInternshala:
                                                    "number_of_openings", "skill_set", "perks", "src_url", ])
             writer.writeheader()
             self._write_file(writer)
+
+    @staticmethod
+    def _get_total_pages(url: str) -> int:
+        page_src = req.get(url).text
+        page_soup = bs(page_src, "html.parser")
+        return int(page_soup.find("span", {"id": "total_pages"}).text)
 
     def _write_file(self, writer: DictWriter) -> None:
         for ele in tqdm(self._company_info_list, desc="Dumping..."):
@@ -60,12 +122,12 @@ class ScrapInternshala:
                  "perks": ele.perks,
                  "src_url": ele.src_url})
 
-    def _scrap_url(self, url: str) -> None:
+    def _scrap_url(self, url: str, page_no: int) -> None:
         page_src = req.get(url).text
         page_soup = bs(page_src, "html.parser")
         companies_box = page_soup.findAll("a", {"class": "view_detail_button"})
 
-        for company in tqdm(companies_box, desc="Scrapping companies..."):
+        for company in tqdm(companies_box, desc="Scrapping page {} companies.".format(page_no)):
             details_url = self._base_url + company["href"]
             company_details_src = req.get(details_url).text
             company_details_soup = bs(company_details_src, "html.parser")
@@ -92,6 +154,9 @@ class ScrapInternshala:
 
     @staticmethod
     def _get_applicants(raw_text: str) -> int:
+        if "+" in raw_text:
+            applicants = raw_text.split("+ ")
+            return int(applicants[0])
         applicants = raw_text.split()
         if len(applicants) == 2:
             return int(applicants[0])
@@ -190,9 +255,3 @@ class ScrapInternshala:
             if "Months" in duration.text or "Month" in duration.text:
                 duration = duration.text.split()
                 return int(duration[0]) * 30
-
-
-if __name__ == "__main__":
-    scrapper = ScrapInternshala()
-    scrapper.scrap_all_pages()
-    scrapper.dump(r"C:\Users\DELL\Desktop\scrap_for_python\only_python_scrap.csv")
