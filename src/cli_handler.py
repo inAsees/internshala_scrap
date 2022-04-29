@@ -53,6 +53,8 @@ class CliHandler:
                     continue
                 else:
                     print("Invalid input.")
+                    self._attempt_handling.increment_cur_attempt()
+                    continue
             elif is_file_path_exists(file_path) is None:
                 print("Invalid file suffix!!\n"
                       "File suffix should be '.csv'")
