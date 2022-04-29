@@ -23,6 +23,16 @@ def get_available_keywords() -> list[str]:
     return available_keywords
 
 
+def is_file_parent_exists(file_path: str) -> Optional[bool]:
+    path = Path(file_path)
+    if path.parent.exists():
+        if path.suffix == ".csv":
+            return True
+        else:
+            return None
+    return False
+
+
 def is_file_path_exists(file_path: str) -> Optional[bool]:
     path = Path(file_path)
     if path.exists():
@@ -30,8 +40,7 @@ def is_file_path_exists(file_path: str) -> Optional[bool]:
             return True
         else:
             return None
-    else:
-        return False
+    return False
 
 
 @dataclass
