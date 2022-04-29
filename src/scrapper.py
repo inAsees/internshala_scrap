@@ -34,11 +34,8 @@ class AttemptsHandling:
     def increment_cur_attempt(self) -> None:
         self._cur_attempt += 1
 
-    def is_cur_attempt_equals_last_attempt(self) -> bool:
-        return self._cur_attempt == self._max_attempt
-
     def is_cur_attempt_less_than_max_attempt(self):
-        return self._cur_attempt <= self._max_attempt
+        return self._cur_attempt < self._max_attempt
 
 
 def is_file_parent_exists(file_path: str) -> Optional[bool]:
