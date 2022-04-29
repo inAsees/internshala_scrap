@@ -23,6 +23,21 @@ def get_available_keywords() -> list[str]:
     return available_keywords
 
 
+class AttemptsHandling:
+    def __init__(self):
+        self._max_attempt = 5
+        self._cur_attempt = 0
+
+    def increment_cur_attempt(self) -> None:
+        self._cur_attempt += 1
+
+    def is_cur_attempt_equals_last_attempt(self) -> bool:
+        return self._cur_attempt == self._max_attempt
+
+    def is_cur_attempt_less_than_max_attempt(self):
+        return self._cur_attempt <= self._max_attempt
+
+
 def is_file_parent_exists(file_path: str) -> Optional[bool]:
     path = Path(file_path)
     if path.parent.exists():
