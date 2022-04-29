@@ -1,12 +1,12 @@
-from tests.scrapper import ScrapInternshala, get_available_keywords, is_file_path_exists
+from tests.scrapper import ScrapInternshala, AttemptsHandling, get_available_keywords, is_file_path_exists, \
+    is_file_parent_exists
 
 
 class CliHandler:
     def __init__(self):
-        pass
+        self._attempt_handling = AttemptsHandling()
 
-    @staticmethod
-    def run():
+    def run(self):
         print("<<<<Welcome Message>>>>\n"
               "This program will help you to scrap data from www.internshala.com website and write it into CSV file in "
               "your local system.")
@@ -33,15 +33,39 @@ class CliHandler:
         print("Please provide a valid file path to save the data.\n"
               "If you have already saved data and trying to save new data it is highly recommended to provide different"
               " file name.\n")
-        file_path = input("Enter the path:  ")
-        if is_file_path_exists(file_path):
-            print("This file already exists,please provide different file name.")
-            user_choice = input("Do you want to overwrite this file (Y/N): ").lower()
-            if user_choice == "y":
-                pass
-            else:
-                pass
-        elif is_file_path_exists(file_path) is None:
-            print("Invalid file suffix!!")
-        else:
-            print("Ready to write the file.")
+
+        while self._attempt_handling.is_cur_attempt_less_than_max_attempt():
+            if self._attempt_handling.is_cur_attempt_equals_last_attempt():
+                print("Too many wrong attempts.\n"
+                      "Program stopped.")
+                quit()
+            file_path = input("Enter the path:  ")
+            if is_file_path_exists(file_path):
+                print("This file already exists!!!.")
+                user_choice = input("Do you want to overwrite this file (Y/N): ").lower()
+                if user_choice == "y":
+                    print("Ready to overwrite the file.")
+                    scrapper.dump(file_path)
+                    quit()
+                elif user_choice == "n":
+                    print("Provide different file name with complete path again.")
+                    self._attempt_handling.increment_cur_attempt()
+                    continue
+                else:
+                    print("Invalid input.")
+            elif is_file_path_exists(file_path) is None:
+                print("Invalid file suffix!!\n"
+                      "File suffix should be '.csv'")
+                self._attempt_handling.increment_cur_attempt()
+                continue
+            if is_file_parent_exists(file_path):
+                scrapper.dump(file_path)
+                quit()
+            elif is_file_parent_exists(file_path) is None:
+                print("Invalid file suffix!!\n"
+                      "File suffix should be '.csv'")
+                self._attempt_handling.increment_cur_attempt()
+                continue
+
+            print("Invalid path!!")
+            self._attempt_handling.increment_cur_attempt()
