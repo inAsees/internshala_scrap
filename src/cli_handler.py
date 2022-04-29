@@ -1,4 +1,4 @@
-from scrapper import ScrapInternshala, AttemptsHandling, get_available_keywords, is_file_path_exists, \
+from src.scrapper import ScrapInternshala, AttemptsHandling, get_available_keywords, is_file_path_exists, \
     is_file_parent_exists
 
 
