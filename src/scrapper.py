@@ -6,56 +6,18 @@ import requests as req
 from bs4 import BeautifulSoup as bs
 from bs4.element import ResultSet
 from tqdm import tqdm
-from pathlib import Path
-from typing import Optional
 
 
-def get_available_keywords() -> list[str]:
-    available_keywords = ["Computer Science", ".NET Development", "Android App Development", "Angular.js Development",
-                          "Artificial Intelligence (AI)", "ASP.NET Development", "Backend Development", "Big Data",
-                          "Blockchain Development", "Cloud Computing", "Computer Vision", "Cyber Security",
-                          "Data Entry", "Data Science", "Database Building", "Flutter Development",
-                          "Front End Development", "Full Stack Development", "Image Processing",
-                          "iOS App Development", "Java Development", "Javascript Development", "Machine Learning",
-                          "Mobile App Development", "Node.js Development", "Network Engineering", "PHP Development",
-                          "Programming", "Python Development", "Django Development", "Software Development",
-                          "Software Testing", "UI/UX Design", "Web Development", "Wordpress Development",
-                          "React Native Development", "ReactJS Development", "Product Management",
-                          "MERN Stack Development", "Quality Assurance", "Web Design", "Internet of Things (IoT)", ]
-
-    return sorted(available_keywords)
-
-
-class AttemptsHandling:
-    def __init__(self):
-        self._max_attempt = 5
+class AttemptsHandler:
+    def __init__(self, max_attempts: int):
+        self._max_attempts = max_attempts
         self._cur_attempt = 0
 
     def increment_cur_attempt(self) -> None:
         self._cur_attempt += 1
 
-    def is_cur_attempt_less_than_max_attempt(self):
-        return self._cur_attempt < self._max_attempt
-
-
-def is_file_parent_exists(file_path: str) -> Optional[bool]:
-    path = Path(file_path)
-    if path.parent.exists():
-        if path.suffix == ".csv":
-            return True
-        else:
-            return None
-    return False
-
-
-def is_file_path_exists(file_path: str) -> Optional[bool]:
-    path = Path(file_path)
-    if path.exists():
-        if path.suffix == ".csv":
-            return True
-        else:
-            return None
-    return False
+    def is_attempts_left(self):
+        return self._cur_attempt < self._max_attempts
 
 
 @dataclass
@@ -160,7 +122,7 @@ class ScrapInternshala:
         return 0
 
     @staticmethod
-    def _get_perks(company_soup: bs) -> list[str]:
+    def _get_perks(company_soup: bs) -> List[str]:
         perks = []
         perks_result_set = company_soup.findAll("div", {"class": "section_heading heading_5_5"})
         for heading in perks_result_set:
@@ -173,7 +135,7 @@ class ScrapInternshala:
         return ["Not mentioned"]
 
     @staticmethod
-    def _get_skills_set(company_soup: bs) -> list[str]:
+    def _get_skills_set(company_soup: bs) -> List[str]:
         skill_set = []
         skill_result_set = company_soup.findAll("div", {"class": "section_heading heading_5_5"})
         for heading in skill_result_set:
