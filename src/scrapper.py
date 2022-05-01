@@ -16,7 +16,7 @@ class AttemptsHandler:
     def increment_cur_attempt(self) -> None:
         self._cur_attempt += 1
 
-    def is_attempts_left(self):
+    def is_attempts_left(self) -> bool:
         return self._cur_attempt < self._max_attempts
 
 
