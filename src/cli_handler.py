@@ -86,6 +86,6 @@ class CliHandler:
 
     @staticmethod
     def _is_user_idx_in_range(user_input_int: int, max_len: int) -> bool:
-        if user_input_int is None or user_input_int < 0 or user_input_int > max_len:
+        if user_input_int is None or user_input_int not in range(max_len):
             return False
         return True
