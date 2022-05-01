@@ -1,1 +1,1 @@
-This project is used to scrap the required data from the www.internshala.com website and store the data in your local system as CSV file.
+This is a command line interface program, in which website www.internshala.com is scrapped for available internships according to the user selected keyword and the scraped data is then dumped into users local system as csv file.
