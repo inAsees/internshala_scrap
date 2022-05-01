@@ -46,19 +46,22 @@ class CliHandler:
             else:
                 if Utils.is_file_path_exists(file_path):
                     is_override = self._prompt_user_for_overriding()
-                    if not is_override:
+                    if is_override is None:
+                        print("Invalid input.")
+                        self._attempt_handler.increment_cur_attempt()
+                        continue
+                    elif not is_override:
                         print("Provide different file name with complete path again.")
                         self._attempt_handler.increment_cur_attempt()
                         continue
-                    elif is_override is None:
-                        print("Invalid input.")
-                        continue
+
                 if not Utils.is_parent_path_exists(file_path):
                     print("Invalid path!!")
                     self._attempt_handler.increment_cur_attempt()
                     continue
-                scrapper.dump(str(file_path))
-                sys.exit()
+            scrapper.dump(str(file_path))
+            sys.exit()
+
         print("Too many wrong attempts\n"
               "Program stopped.")
         sys.exit()
