@@ -6,7 +6,7 @@ from src.utils import Utils
 
 
 class CliHandler:
-    def _init_(self):
+    def __init__(self):
         self._attempt_handler = AttemptsHandler(5)
 
     def run(self):
@@ -24,7 +24,7 @@ class CliHandler:
         if user_input_int is None:
             print("Invalid input.")
             sys.exit()
-        if not self._is_user_idx_in_range(user_input_int, len(available_keywords)):
+        if not self._is_user_idx_in_range(user_input_int, len(available_keywords) - 1):
             print("Invalid input")
             sys.exit()
 
@@ -58,12 +58,15 @@ class CliHandler:
                     self._attempt_handler.increment_cur_attempt()
                     continue
                 scrapper.dump(str(file_path))
+                sys.exit()
         print("Too many wrong attempts\n"
               "Program stopped.")
         sys.exit()
 
     @staticmethod
     def _prompt_user_for_overriding() -> Optional[bool]:
+        print("This file path already exits\n"
+              "Do you want to override")
         user_input = input("(y/n):  ").lower()
         if user_input == "y":
             return True
