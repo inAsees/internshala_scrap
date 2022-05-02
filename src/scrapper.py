@@ -183,16 +183,16 @@ class ScrapInternshala:
     @staticmethod
     def _get_stipend(raw_text: str) -> int:
         if raw_text == "Unpaid":
-            return 0
-        salary = ""
+            salary = 0
+            return salary
         salary_cycle = {
             "weekly_salary": "".join(raw_text.strip().split(" /week")),
             "monthly_salary": "".join(raw_text.strip().split(" /month"))
         }
         if " /week" in raw_text:
-            salary += salary_cycle["weekly_salary"]
+            salary = salary_cycle["weekly_salary"]
         elif " /month" in raw_text:
-            salary += salary_cycle["monthly_salary"]
+            salary = salary_cycle["monthly_salary"]
         else:
             salary = raw_text
 
@@ -217,9 +217,6 @@ class ScrapInternshala:
             elif " lump sum" in salary:
                 salary = "".join(salary.split(" lump sum"))
                 return int(salary)
-            else:
-                salary = 0
-                return salary
 
     @staticmethod
     def _get_duration(company_result_set: ResultSet) -> int:
