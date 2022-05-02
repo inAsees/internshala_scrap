@@ -182,11 +182,24 @@ class ScrapInternshala:
 
     @staticmethod
     def _get_stipend(raw_text: str) -> int:
-        salary = "".join(raw_text.lstrip().split(" /month"))
+        if raw_text == "Unpaid":
+            return 0
+        salary = ""
+        salary_cycle = {
+            "weekly_salary": "".join(raw_text.strip().split(" /week")),
+            "monthly_salary": "".join(raw_text.strip().split(" /month"))
+        }
+        if " /week" in raw_text:
+            salary += salary_cycle["weekly_salary"]
+        elif " /month" in raw_text:
+            salary += salary_cycle["monthly_salary"]
+        else:
+            salary = raw_text
+
         if len(salary) < 6:
             return int(salary)
         elif len(salary) > 5:
-            if "-" in raw_text and " lump sum" in raw_text:
+            if "-" in raw_text and " lump sum" in salary:
                 raw_salary = raw_text.split(" lump sum")
                 raw_salary = raw_salary[0].split("-")
                 avg = (int(raw_salary[0]) + int(raw_salary[1])) // 2
