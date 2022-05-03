@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 logging.basicConfig(filename=Path('scrap_logger.log'), encoding='utf-8',
-                    level=logging.INFO)
+                    level=logging.INFO, filemode="w")
 
 
 def main():
