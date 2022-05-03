@@ -157,11 +157,8 @@ class ScrapInternshala:
     @staticmethod
     def _get_number_of_openings(company_soup: ResultSet) -> int:
         for i in company_soup:
-            try:
-                if type(int(i.text)) is int:
-                    return int(i.text)
-            except:
-                pass
+            if i.text.isdigit():
+                return int(i.text)
 
     @staticmethod
     def _get_apply_by(company_soup: ResultSet) -> str:
