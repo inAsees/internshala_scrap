@@ -167,7 +167,7 @@ class ScrapInternshala:
     @staticmethod
     def _get_number_of_openings(company_soup: ResultSet) -> int:
         for i in company_soup:
-            if i.text.isdigit():
+            if i.text.strip().isdigit():
                 return int(i.text)
             else:
                 logging.info(i.text)
@@ -206,5 +206,8 @@ class ScrapInternshala:
             if "Months" in duration.text or "Month" in duration.text:
                 duration = duration.text.split()
                 return int(duration[0]) * 30
+            elif "Weeks" in duration.text or "Week" in duration.text:
+                duration = duration.text.split()
+                return int(duration[0]) * 7
             else:
                 logging.info(duration.text.strip())
