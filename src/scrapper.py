@@ -33,7 +33,7 @@ class CompanyInfo:
     applicants: int
     number_of_openings: int
     skill_set: List[str]
-    perks: list[str]
+    perks: List[str]
     src_url: str
 
 
