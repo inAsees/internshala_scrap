@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Optional
 from src.scrapper import ScrapInternshala, AttemptsHandler
 from src.utils import Utils
+import logging
 
 
 class CliHandler:
@@ -29,9 +30,10 @@ class CliHandler:
             sys.exit()
 
         keyword_search = available_keywords[int(user_input)]
+        logging.info("Scrapping started")
         scrapper = ScrapInternshala(keyword_search)
         scrapper.scrap_all_pages()
-        print("Scrapping successfully completed.\n")
+        logging.info("Scrapping finished")
         print("Please provide a valid file path to save the data.\n"
               "If you have already saved data and trying to save new data it is highly recommended to provide different"
               " file name.\n")
@@ -59,7 +61,12 @@ class CliHandler:
                     print("Invalid path!!")
                     self._attempt_handler.increment_cur_attempt()
                     continue
-            scrapper.dump(str(file_path))
+            dump = scrapper.dump(str(file_path))
+            if dump:
+                print("ERROR : Permission Denied\n"
+                      "Please check whether the file is already open and close it.\n"
+                      "Try to provide the file path again.")
+                continue
             sys.exit()
 
         print("Too many wrong attempts\n"

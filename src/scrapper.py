@@ -1,11 +1,14 @@
 import csv
+from typing import Optional
 from csv import DictWriter
 from dataclasses import dataclass
-from typing import List,Tuple
+from typing import List
 import requests as req
 from bs4 import BeautifulSoup as bs
 from bs4.element import ResultSet
 from tqdm import tqdm
+import logging
+from src.get_stipend import GetStipend
 
 
 class AttemptsHandler:
@@ -52,14 +55,17 @@ class ScrapInternshala:
             self._scrap_url(url, page_no)
             page_no += 1
 
-    def dump(self, file_path: str) -> None:
-        with open(file_path, "w", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=["job_title", "company", "monthly_lump_sum", "weekly_lump_sum",
-                                                   "incentive", "duration_in_days", "location", "apply_by",
-                                                   "applicants", "number_of_openings", "skill_set", "perks",
-                                                   "src_url", ])
-            writer.writeheader()
-            self._write_file(writer)
+    def dump(self, file_path: str) -> Optional[bool]:
+        try:
+            with open(file_path, "w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=["job_title", "company", "monthly_lump_sum", "weekly_lump_sum",
+                                                       "incentive", "duration_in_days", "location", "apply_by",
+                                                       "applicants", "number_of_openings", "skill_set", "perks",
+                                                       "src_url", ])
+                writer.writeheader()
+                self._write_file(writer)
+        except PermissionError:
+            return True
 
     @staticmethod
     def _get_total_pages(url: str) -> int:
@@ -100,7 +106,7 @@ class ScrapInternshala:
     def _parse_company_info(cls, company_soup: bs, detail_url: str) -> CompanyInfo:
         job_title = company_soup.find("span", {"class": "profile_on_detail_page"}).text.strip()
         company = company_soup.find("a", {"class": "link_display_like_text"}).text.strip()
-        stipend = cls._get_stipend(company_soup.find("span", {"class": "stipend"}).text)
+        m_stipend, w_stipend = GetStipend.get_stipend(company_soup.find("span", {"class": "stipend"}).text)
         incentive = cls._get_incentive(company_soup.findAll("i"))
         duration_in_days = cls._get_duration(company_soup.findAll("div", {"class": "item_body"}))
         location = company_soup.find("a", {"class": "location_link"}).text.strip()
@@ -111,57 +117,21 @@ class ScrapInternshala:
         perks = cls._get_perks(company_soup)
         src_url = detail_url
 
-        return CompanyInfo(job_title, company, stipend[0], stipend[1], incentive, duration_in_days, location, apply_by,
+        return CompanyInfo(job_title, company, m_stipend, w_stipend, incentive, duration_in_days, location, apply_by,
                            applicants, number_of_openings, skill_set, perks, src_url)
-
-    @classmethod
-    def _get_stipend(cls, raw_text: str) -> Tuple[int, int]:
-        if "Unpaid" in raw_text:
-            monthly_stipend = 0
-            weekly_stipend = 0
-            return monthly_stipend, weekly_stipend
-        elif " /month" in raw_text:
-            monthly_stipend = cls._parse_stipend("".join(raw_text.strip().split(" /month")))
-            return monthly_stipend, 0
-        elif " /week" not in raw_text and "Unpaid" not in raw_text:
-            monthly_stipend = cls._parse_stipend(raw_text)
-            return monthly_stipend, 0
-        elif " /week" in raw_text:
-            weekly_stipend = cls._parse_stipend("".join(raw_text.strip().split(" /week")))
-            return 0, weekly_stipend
-
-    @staticmethod
-    def _parse_stipend(stipend: str) -> int:
-        if len(stipend) < 6:
-            return int(stipend)
-        elif len(stipend) > 5:
-            if "-" in stipend and " lump sum" in stipend:
-                raw_stipend = stipend.split(" lump sum")
-                raw_stipend = raw_stipend[0].split("-")
-                avg = (int(raw_stipend[0]) + int(raw_stipend[1])) // 2
-                return int(avg)
-            elif "-" in stipend:
-                stipend = list(map(int, stipend.split("-")))
-                avg = (stipend[0] + stipend[1]) // 2
-                return int(avg)
-            elif " lump sum +  Incentives" in stipend:
-                stipend = "".join(stipend.split(" lump sum +  Incentives"))
-                return int(stipend)
-            elif " +  Incentives" in stipend:
-                stipend = "".join(stipend.split(" +  Incentives"))
-                return int(stipend)
-            elif " lump sum" in stipend:
-                stipend = "".join(stipend.split(" lump sum"))
-                return int(stipend)
 
     @staticmethod
     def _get_applicants(raw_text: str) -> int:
         if "+" in raw_text:
             applicants = raw_text.split("+ ")
             return int(applicants[0])
+        else:
+            logging.info(raw_text)
         applicants = raw_text.split()
         if len(applicants) == 2:
             return int(applicants[0])
+        else:
+            logging.info(applicants)
         return 0
 
     @staticmethod
@@ -174,8 +144,12 @@ class ScrapInternshala:
                 for perk in children:
                     if perk != "\n":
                         perks.append(perk.text)
+                    else:
+                        logging.info(perk)
                 return perks
-        return ["Not mentioned"]
+            else:
+                logging.info(heading.text)
+        return [""]
 
     @staticmethod
     def _get_skills_set(company_soup: bs) -> List[str]:
@@ -187,40 +161,48 @@ class ScrapInternshala:
                 for skill in children:
                     if skill != "\n":
                         skill_set.append(skill.text)
+                    else:
+                        logging.info(skill)
                 return skill_set
+            else:
+                logging.info(heading.text)
+
         return [""]
 
     @staticmethod
     def _get_number_of_openings(company_soup: ResultSet) -> int:
         for i in company_soup:
-            try:
-                if type(int(i.text)) is int:
-                    return int(i.text)
-            except:
-                pass
+            if i.text.strip().isdigit():
+                return int(i.text)
+            else:
+                logging.info(i.text)
 
     @staticmethod
     def _get_apply_by(company_soup: ResultSet) -> str:
         for apply in company_soup:
             if "'" in apply.text:
                 return apply.text.strip()
+            else:
+                logging.info(apply.text)
 
     @staticmethod
     def _get_incentive(company_soup: ResultSet) -> str:
         incentive = "0"
+
         for i in company_soup:
-            try:
-                text = i.get("popover_content")
-                if "starting" in text:
-                    continue
-                elif "%" in text:
-                    idx = text.index("(")
-                    incentive = text[idx + 1:-2]
-                else:
-                    idx = text.index("(")
-                    incentive = text[idx + 3:-2]
-            except:
-                pass
+            text = i.get("popover_content")
+            if text is None:
+                continue
+            elif "starting" in text:
+                continue
+            elif "%" in text:
+                idx = text.index("(")
+                incentive = text[idx + 1:-2]
+            elif "%" not in text:
+                idx = text.index("(")
+                incentive = text[idx + 3:-2]
+            else:
+                logging.info(text)
         return incentive
 
     @staticmethod
@@ -229,3 +211,8 @@ class ScrapInternshala:
             if "Months" in duration.text or "Month" in duration.text:
                 duration = duration.text.split()
                 return int(duration[0]) * 30
+            elif "Weeks" in duration.text or "Week" in duration.text:
+                duration = duration.text.split()
+                return int(duration[0]) * 7
+            else:
+                logging.info(duration.text.strip())
