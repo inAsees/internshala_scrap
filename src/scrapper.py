@@ -43,11 +43,9 @@ class ScrapInternshala:
     def __init__(self, keyword_search: str):
         self._base_url = "https://internshala.com"
         _python_intern_page = "internships/keywords-{}".format(keyword_search)
-        # _total_pages = self._get_total_pages("{}/{}/page-1".format(self._base_url, _python_intern_page))
-        # self._python_internship_page_url = ["{}/{}/page-{}".format(self._base_url, _python_intern_page, i) for i in
-        #                                     range(1, _total_pages + 1)]
+        _total_pages = self._get_total_pages("{}/{}/page-1".format(self._base_url, _python_intern_page))
         self._python_internship_page_url = ["{}/{}/page-{}".format(self._base_url, _python_intern_page, i) for i in
-                                            range(1, 4)]
+                                            range(1, _total_pages + 1)]
         self._company_info_list = []  # type: List[CompanyInfo]
 
     def scrap_all_pages(self) -> None:
