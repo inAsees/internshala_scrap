@@ -107,7 +107,7 @@ class ScrapInternshala:
         job_title = company_soup.find("span", {"class": "profile_on_detail_page"}).text.strip()
         company = company_soup.find("a", {"class": "link_display_like_text"}).text.strip()
         m_stipend, w_stipend = GetStipend.get_stipend(company_soup.find("span", {"class": "stipend"}).text)
-        incentive = cls._get_incentive(company_soup.find("i").get("popover_content"))
+        incentive = cls._get_incentive(company_soup.findAll("i"))
         duration_in_days = cls._get_duration(company_soup.findAll("div", {"class": "item_body"}))
         location = company_soup.find("a", {"class": "location_link"}).text.strip()
         apply_by = cls._get_apply_by(company_soup.findAll("div", {"class": "item_body"}))
@@ -169,16 +169,23 @@ class ScrapInternshala:
                 return apply.text.strip()
 
     @staticmethod
-    def _get_incentive(text: str) -> str:
+    def _get_incentive(company_soup: ResultSet) -> str:
         incentive = "0"
-        if "%" in text:
-            idx = text.index("(")
-            incentive = text[idx + 1:-2]
-        elif "%" not in text:
-            idx = text.index("(")
-            incentive = text[idx + 3:-2]
-        else:
-            logging.info(datetime, text)
+
+        for i in company_soup:
+            text = i.get("popover_content")
+            if text is None:
+                continue
+            elif "starting" in text:
+                continue
+            elif "%" in text:
+                idx = text.index("(")
+                incentive = text[idx + 1:-2]
+            elif "%" not in text:
+                idx = text.index("(")
+                incentive = text[idx + 3:-2]
+            else:
+                logging.info(datetime, text)
         return incentive
 
     @staticmethod
@@ -188,4 +195,4 @@ class ScrapInternshala:
                 duration = duration.text.split()
                 return int(duration[0]) * 30
             else:
-                logging.info(datetime, duration.text)
+                logging.info(datetime, duration.text.strip())
