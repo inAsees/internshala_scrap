@@ -61,7 +61,12 @@ class CliHandler:
                     print("Invalid path!!")
                     self._attempt_handler.increment_cur_attempt()
                     continue
-            scrapper.dump(str(file_path))
+            dump = scrapper.dump(str(file_path))
+            if dump:
+                print("ERROR : Permission Denied\n"
+                      "Please check whether the file is already open and close it.\n"
+                      "Try to provide the file path again.")
+                continue
             sys.exit()
 
         print("Too many wrong attempts\n"
