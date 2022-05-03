@@ -149,7 +149,7 @@ class ScrapInternshala:
                 return perks
             else:
                 logging.info(heading.text)
-        return ["Not mentioned"]
+        return [""]
 
     @staticmethod
     def _get_skills_set(company_soup: bs) -> List[str]:
