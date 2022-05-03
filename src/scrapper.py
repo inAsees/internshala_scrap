@@ -1,4 +1,5 @@
 import csv
+from typing import Optional
 from csv import DictWriter
 from dataclasses import dataclass
 from typing import List
@@ -54,14 +55,17 @@ class ScrapInternshala:
             self._scrap_url(url, page_no)
             page_no += 1
 
-    def dump(self, file_path: str) -> None:
-        with open(file_path, "w", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=["job_title", "company", "monthly_lump_sum", "weekly_lump_sum",
-                                                   "incentive", "duration_in_days", "location", "apply_by",
-                                                   "applicants", "number_of_openings", "skill_set", "perks",
-                                                   "src_url", ])
-            writer.writeheader()
-            self._write_file(writer)
+    def dump(self, file_path: str) -> Optional[bool]:
+        try:
+            with open(file_path, "w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=["job_title", "company", "monthly_lump_sum", "weekly_lump_sum",
+                                                       "incentive", "duration_in_days", "location", "apply_by",
+                                                       "applicants", "number_of_openings", "skill_set", "perks",
+                                                       "src_url", ])
+                writer.writeheader()
+                self._write_file(writer)
+        except PermissionError:
+            return True
 
     @staticmethod
     def _get_total_pages(url: str) -> int:
@@ -159,9 +163,10 @@ class ScrapInternshala:
                         skill_set.append(skill.text)
                     else:
                         logging.info(skill)
+                return skill_set
             else:
                 logging.info(heading.text)
-                return skill_set
+
         return [""]
 
     @staticmethod
