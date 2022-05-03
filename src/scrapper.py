@@ -24,7 +24,8 @@ class AttemptsHandler:
 class CompanyInfo:
     job_title: str
     company: str
-    lump_sum_per_month: int
+    monthly_lump_sum: int
+    weekly_lump_sum: int
     incentive: str
     duration_in_days: int
     location: str
@@ -53,9 +54,10 @@ class ScrapInternshala:
 
     def dump(self, file_path: str) -> None:
         with open(file_path, "w", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=["job_title", "company", "lump_sum_per_month", "incentive",
-                                                   "duration_in_days", "location", "apply_by", "applicants",
-                                                   "number_of_openings", "skill_set", "perks", "src_url", ])
+            writer = csv.DictWriter(f, fieldnames=["job_title", "company", "monthly_lump_sum", "weekly_lump_sum",
+                                                   "incentive", "duration_in_days", "location", "apply_by",
+                                                   "applicants", "number_of_openings", "skill_set", "perks",
+                                                   "src_url", ])
             writer.writeheader()
             self._write_file(writer)
 
@@ -70,7 +72,8 @@ class ScrapInternshala:
             writer.writerow(
                 {"job_title": ele.job_title,
                  "company": ele.company,
-                 "lump_sum_per_month": ele.lump_sum_per_month,
+                 "monthly_lump_sum": ele.monthly_lump_sum,
+                 "weekly_lump_sum": ele.weekly_lump_sum,
                  "incentive": ele.incentive,
                  "duration_in_days": ele.duration_in_days,
                  "location": ele.location,
@@ -108,8 +111,48 @@ class ScrapInternshala:
         perks = cls._get_perks(company_soup)
         src_url = detail_url
 
-        return CompanyInfo(job_title, company, stipend, incentive, duration_in_days, location, apply_by, applicants,
-                           number_of_openings, skill_set, perks, src_url)
+        return CompanyInfo(job_title, company, stipend[0], stipend[1], incentive, duration_in_days, location, apply_by,
+                           applicants, number_of_openings, skill_set, perks, src_url)
+
+    @classmethod
+    def _get_stipend(cls, raw_text: str) -> tuple[int, int]:
+        if "Unpaid" in raw_text:
+            monthly_stipend = 0
+            weekly_stipend = 0
+            return monthly_stipend, weekly_stipend
+        elif " /month" in raw_text:
+            monthly_stipend = cls._parse_stipend("".join(raw_text.strip().split(" /month")))
+            return monthly_stipend, 0
+        elif " /week" not in raw_text and "Unpaid" not in raw_text:
+            monthly_stipend = cls._parse_stipend(raw_text)
+            return monthly_stipend, 0
+        elif " /week" in raw_text:
+            weekly_stipend = cls._parse_stipend("".join(raw_text.strip().split(" /week")))
+            return 0, weekly_stipend
+
+    @staticmethod
+    def _parse_stipend(stipend: str) -> int:
+        if len(stipend) < 6:
+            return int(stipend)
+        elif len(stipend) > 5:
+            if "-" in stipend and " lump sum" in stipend:
+                raw_stipend = stipend.split(" lump sum")
+                raw_stipend = raw_stipend[0].split("-")
+                avg = (int(raw_stipend[0]) + int(raw_stipend[1])) // 2
+                return int(avg)
+            elif "-" in stipend:
+                stipend = list(map(int, stipend.split("-")))
+                avg = (stipend[0] + stipend[1]) // 2
+                return int(avg)
+            elif " lump sum +  Incentives" in stipend:
+                stipend = "".join(stipend.split(" lump sum +  Incentives"))
+                return int(stipend)
+            elif " +  Incentives" in stipend:
+                stipend = "".join(stipend.split(" +  Incentives"))
+                return int(stipend)
+            elif " lump sum" in stipend:
+                stipend = "".join(stipend.split(" lump sum"))
+                return int(stipend)
 
     @staticmethod
     def _get_applicants(raw_text: str) -> int:
@@ -179,44 +222,6 @@ class ScrapInternshala:
             except:
                 pass
         return incentive
-
-    @staticmethod
-    def _get_stipend(raw_text: str) -> int:
-        if raw_text == "Unpaid":
-            salary = 0
-            return salary
-        salary_cycle = {
-            "weekly_salary": "".join(raw_text.strip().split(" /week")),
-            "monthly_salary": "".join(raw_text.strip().split(" /month"))
-        }
-        if " /week" in raw_text:
-            salary = salary_cycle["weekly_salary"]
-        elif " /month" in raw_text:
-            salary = salary_cycle["monthly_salary"]
-        else:
-            salary = raw_text
-
-        if len(salary) < 6:
-            return int(salary)
-        elif len(salary) > 5:
-            if "-" in raw_text and " lump sum" in salary:
-                raw_salary = raw_text.split(" lump sum")
-                raw_salary = raw_salary[0].split("-")
-                avg = (int(raw_salary[0]) + int(raw_salary[1])) // 2
-                return int(avg)
-            elif "-" in salary:
-                salary = list(map(int, salary.split("-")))
-                avg = (salary[0] + salary[1]) // 2
-                return int(avg)
-            elif " lump sum +  Incentives" in salary:
-                salary = "".join(salary.split(" lump sum +  Incentives"))
-                return int(salary)
-            elif " +  Incentives" in salary:
-                salary = "".join(salary.split(" +  Incentives"))
-                return int(salary)
-            elif " lump sum" in salary:
-                salary = "".join(salary.split(" lump sum"))
-                return int(salary)
 
     @staticmethod
     def _get_duration(company_result_set: ResultSet) -> int:
