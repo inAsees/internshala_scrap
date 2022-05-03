@@ -123,9 +123,13 @@ class ScrapInternshala:
         if "+" in raw_text:
             applicants = raw_text.split("+ ")
             return int(applicants[0])
+        else:
+            logging.info(raw_text)
         applicants = raw_text.split()
         if len(applicants) == 2:
             return int(applicants[0])
+        else:
+            logging.info(applicants)
         return 0
 
     @staticmethod
@@ -138,7 +142,11 @@ class ScrapInternshala:
                 for perk in children:
                     if perk != "\n":
                         perks.append(perk.text)
+                    else:
+                        logging.info(perk)
                 return perks
+            else:
+                logging.info(heading.text)
         return ["Not mentioned"]
 
     @staticmethod
@@ -151,6 +159,10 @@ class ScrapInternshala:
                 for skill in children:
                     if skill != "\n":
                         skill_set.append(skill.text)
+                    else:
+                        logging.info(skill)
+            else:
+                logging.info(heading.text)
                 return skill_set
         return [""]
 
@@ -159,12 +171,16 @@ class ScrapInternshala:
         for i in company_soup:
             if i.text.isdigit():
                 return int(i.text)
+            else:
+                logging.info(i.text)
 
     @staticmethod
     def _get_apply_by(company_soup: ResultSet) -> str:
         for apply in company_soup:
             if "'" in apply.text:
                 return apply.text.strip()
+            else:
+                logging.info(apply.text)
 
     @staticmethod
     def _get_incentive(company_soup: ResultSet) -> str:
