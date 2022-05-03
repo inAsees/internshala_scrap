@@ -6,6 +6,8 @@ import requests as req
 from bs4 import BeautifulSoup as bs
 from bs4.element import ResultSet
 from tqdm import tqdm
+import logging
+from datetime import datetime
 
 from src.get_stipend import GetStipend
 
@@ -105,7 +107,7 @@ class ScrapInternshala:
         job_title = company_soup.find("span", {"class": "profile_on_detail_page"}).text.strip()
         company = company_soup.find("a", {"class": "link_display_like_text"}).text.strip()
         m_stipend, w_stipend = GetStipend.get_stipend(company_soup.find("span", {"class": "stipend"}).text)
-        incentive = cls._get_incentive(company_soup.findAll("i"))
+        incentive = cls._get_incentive(company_soup.find("i").get("popover_content"))
         duration_in_days = cls._get_duration(company_soup.findAll("div", {"class": "item_body"}))
         location = company_soup.find("a", {"class": "location_link"}).text.strip()
         apply_by = cls._get_apply_by(company_soup.findAll("div", {"class": "item_body"}))
@@ -167,21 +169,16 @@ class ScrapInternshala:
                 return apply.text.strip()
 
     @staticmethod
-    def _get_incentive(company_soup: ResultSet) -> str:
+    def _get_incentive(text: str) -> str:
         incentive = "0"
-        for i in company_soup:
-            try:
-                text = i.get("popover_content")
-                if "starting" in text:
-                    continue
-                elif "%" in text:
-                    idx = text.index("(")
-                    incentive = text[idx + 1:-2]
-                else:
-                    idx = text.index("(")
-                    incentive = text[idx + 3:-2]
-            except:
-                pass
+        if "%" in text:
+            idx = text.index("(")
+            incentive = text[idx + 1:-2]
+        elif "%" not in text:
+            idx = text.index("(")
+            incentive = text[idx + 3:-2]
+        else:
+            logging.info(datetime, text)
         return incentive
 
     @staticmethod
