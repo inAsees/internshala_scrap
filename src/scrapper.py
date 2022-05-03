@@ -187,3 +187,5 @@ class ScrapInternshala:
             if "Months" in duration.text or "Month" in duration.text:
                 duration = duration.text.split()
                 return int(duration[0]) * 30
+            else:
+                logging.info(datetime, duration.text)
