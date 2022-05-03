@@ -1,11 +1,13 @@
 import csv
 from csv import DictWriter
 from dataclasses import dataclass
-from typing import List,Tuple
+from typing import List
 import requests as req
 from bs4 import BeautifulSoup as bs
 from bs4.element import ResultSet
 from tqdm import tqdm
+
+from src.get_stipend import GetStipend
 
 
 class AttemptsHandler:
@@ -41,9 +43,11 @@ class ScrapInternshala:
     def __init__(self, keyword_search: str):
         self._base_url = "https://internshala.com"
         _python_intern_page = "internships/keywords-{}".format(keyword_search)
-        _total_pages = self._get_total_pages("{}/{}/page-1".format(self._base_url, _python_intern_page))
+        # _total_pages = self._get_total_pages("{}/{}/page-1".format(self._base_url, _python_intern_page))
+        # self._python_internship_page_url = ["{}/{}/page-{}".format(self._base_url, _python_intern_page, i) for i in
+        #                                     range(1, _total_pages + 1)]
         self._python_internship_page_url = ["{}/{}/page-{}".format(self._base_url, _python_intern_page, i) for i in
-                                            range(1, _total_pages + 1)]
+                                            range(1, 4)]
         self._company_info_list = []  # type: List[CompanyInfo]
 
     def scrap_all_pages(self) -> None:
@@ -100,7 +104,7 @@ class ScrapInternshala:
     def _parse_company_info(cls, company_soup: bs, detail_url: str) -> CompanyInfo:
         job_title = company_soup.find("span", {"class": "profile_on_detail_page"}).text.strip()
         company = company_soup.find("a", {"class": "link_display_like_text"}).text.strip()
-        stipend = cls._get_stipend(company_soup.find("span", {"class": "stipend"}).text)
+        m_stipend, w_stipend = GetStipend.get_stipend(company_soup.find("span", {"class": "stipend"}).text)
         incentive = cls._get_incentive(company_soup.findAll("i"))
         duration_in_days = cls._get_duration(company_soup.findAll("div", {"class": "item_body"}))
         location = company_soup.find("a", {"class": "location_link"}).text.strip()
@@ -111,48 +115,8 @@ class ScrapInternshala:
         perks = cls._get_perks(company_soup)
         src_url = detail_url
 
-        return CompanyInfo(job_title, company, stipend[0], stipend[1], incentive, duration_in_days, location, apply_by,
+        return CompanyInfo(job_title, company, m_stipend, w_stipend, incentive, duration_in_days, location, apply_by,
                            applicants, number_of_openings, skill_set, perks, src_url)
-
-    @classmethod
-    def _get_stipend(cls, raw_text: str) -> Tuple[int, int]:
-        if "Unpaid" in raw_text:
-            monthly_stipend = 0
-            weekly_stipend = 0
-            return monthly_stipend, weekly_stipend
-        elif " /month" in raw_text:
-            monthly_stipend = cls._parse_stipend("".join(raw_text.strip().split(" /month")))
-            return monthly_stipend, 0
-        elif " /week" not in raw_text and "Unpaid" not in raw_text:
-            monthly_stipend = cls._parse_stipend(raw_text)
-            return monthly_stipend, 0
-        elif " /week" in raw_text:
-            weekly_stipend = cls._parse_stipend("".join(raw_text.strip().split(" /week")))
-            return 0, weekly_stipend
-
-    @staticmethod
-    def _parse_stipend(stipend: str) -> int:
-        if len(stipend) < 6:
-            return int(stipend)
-        elif len(stipend) > 5:
-            if "-" in stipend and " lump sum" in stipend:
-                raw_stipend = stipend.split(" lump sum")
-                raw_stipend = raw_stipend[0].split("-")
-                avg = (int(raw_stipend[0]) + int(raw_stipend[1])) // 2
-                return int(avg)
-            elif "-" in stipend:
-                stipend = list(map(int, stipend.split("-")))
-                avg = (stipend[0] + stipend[1]) // 2
-                return int(avg)
-            elif " lump sum +  Incentives" in stipend:
-                stipend = "".join(stipend.split(" lump sum +  Incentives"))
-                return int(stipend)
-            elif " +  Incentives" in stipend:
-                stipend = "".join(stipend.split(" +  Incentives"))
-                return int(stipend)
-            elif " lump sum" in stipend:
-                stipend = "".join(stipend.split(" lump sum"))
-                return int(stipend)
 
     @staticmethod
     def _get_applicants(raw_text: str) -> int:
