@@ -7,8 +7,6 @@ from bs4 import BeautifulSoup as bs
 from bs4.element import ResultSet
 from tqdm import tqdm
 import logging
-from datetime import datetime
-
 from src.get_stipend import GetStipend
 
 
@@ -185,7 +183,7 @@ class ScrapInternshala:
                 idx = text.index("(")
                 incentive = text[idx + 3:-2]
             else:
-                logging.info(datetime, text)
+                logging.info(text)
         return incentive
 
     @staticmethod
@@ -195,4 +193,4 @@ class ScrapInternshala:
                 duration = duration.text.split()
                 return int(duration[0]) * 30
             else:
-                logging.info(datetime, duration.text.strip())
+                logging.info(duration.text.strip())
