@@ -4,7 +4,6 @@ from typing import Optional
 from src.scrapper import ScrapInternshala, AttemptsHandler
 from src.utils import Utils
 import logging
-from datetime import datetime
 
 
 class CliHandler:
@@ -31,10 +30,10 @@ class CliHandler:
             sys.exit()
 
         keyword_search = available_keywords[int(user_input)]
-        logging.info(datetime, "Scrapping started")
+        logging.info("Scrapping started")
         scrapper = ScrapInternshala(keyword_search)
         scrapper.scrap_all_pages()
-        logging.info(datetime, "Scrapping finished at")
+        logging.info("Scrapping finished")
         print("Please provide a valid file path to save the data.\n"
               "If you have already saved data and trying to save new data it is highly recommended to provide different"
               " file name.\n")
