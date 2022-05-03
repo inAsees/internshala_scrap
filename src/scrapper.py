@@ -1,7 +1,7 @@
 import csv
 from csv import DictWriter
 from dataclasses import dataclass
-from typing import List
+from typing import List,Tuple
 import requests as req
 from bs4 import BeautifulSoup as bs
 from bs4.element import ResultSet
@@ -32,7 +32,7 @@ class CompanyInfo:
     apply_by: str
     applicants: int
     number_of_openings: int
-    skill_set: list[str]
+    skill_set: List[str]
     perks: list[str]
     src_url: str
 
@@ -115,7 +115,7 @@ class ScrapInternshala:
                            applicants, number_of_openings, skill_set, perks, src_url)
 
     @classmethod
-    def _get_stipend(cls, raw_text: str) -> tuple[int, int]:
+    def _get_stipend(cls, raw_text: str) -> Tuple[int, int]:
         if "Unpaid" in raw_text:
             monthly_stipend = 0
             weekly_stipend = 0
