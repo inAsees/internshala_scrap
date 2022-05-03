@@ -1,4 +1,6 @@
 from typing import Tuple
+import logging
+from datetime import datetime
 
 
 class GetStipend:
@@ -17,6 +19,8 @@ class GetStipend:
         elif " /week" in raw_text:
             weekly_stipend = cls._parse_stipend("".join(raw_text.strip().split(" /week")))
             return 0, weekly_stipend
+        else:
+            logging.info(datetime, raw_text)
 
     @staticmethod
     def _parse_stipend(stipend: str) -> int:
@@ -41,3 +45,5 @@ class GetStipend:
             elif " lump sum" in stipend:
                 stipend = "".join(stipend.split(" lump sum"))
                 return int(stipend)
+            else:
+                logging.info(datetime, stipend)
