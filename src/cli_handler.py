@@ -25,7 +25,7 @@ class CliHandler:
         if user_input_int is None:
             print("Invalid input.")
             sys.exit()
-        if not self._is_user_idx_in_range(user_input_int, len(available_keywords) - 1):
+        elif not self._is_user_idx_in_range(user_input_int, len(available_keywords)):
             print("Invalid input")
             sys.exit()
 
