@@ -31,5 +31,3 @@ class Utils:
     @staticmethod
     def is_parent_path_exists(path: Path) -> bool:
         return path.parent.exists()
-
-
