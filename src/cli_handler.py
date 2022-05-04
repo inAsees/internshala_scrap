@@ -67,6 +67,7 @@ class CliHandler:
                       "Please check whether the file is already open and close it.\n"
                       "Try to provide the file path again.")
                 continue
+            print("Dumping finished.")
             sys.exit()
 
         print("Too many wrong attempts\n"
