@@ -1,6 +1,7 @@
 from typing import Dict, List
 import pandas as pd
 from ast import literal_eval
+from pandas import DataFrame
 
 
 class Analytics:
@@ -28,7 +29,7 @@ class Analytics:
         self._print_top_results(self._dic, sorted_dic)
 
     def search_top_skills_acc_to_highest_stipend(self) -> None:
-        sorted_df = self._df.sort_values("monthly_lump_sum", ascending=False)
+        sorted_df = self._get_sorted_dataframe("monthly_lump_sum")
         for i in sorted_df["skill_set"].values:
             for j in literal_eval(i):
                 if j == "":
@@ -37,6 +38,20 @@ class Analytics:
         sorted_dic = sorted(self._dic, key=self._dic.get, reverse=True)
         print("\n* Top 10 skills according to highest stipend are listed below\n")
         self._print_top_results(self._dic, sorted_dic)
+
+    def search_top_skills_acc_to_applicants_number(self):
+        sorted_df = self._get_sorted_dataframe("applicants")
+        for i in sorted_df["skill_set"].values:
+            for j in literal_eval(i):
+                if j == "":
+                    continue
+                self._dic[j] = self._dic.get(j, 0) + 1
+        sorted_dic = sorted(self._dic, key=self._dic.get, reverse=True)
+        print("\n* Top 10 skills according to number of applicants are listed below\n")
+        self._print_top_results(self._dic, sorted_dic)
+
+    def _get_sorted_dataframe(self, column_name: str) -> DataFrame:
+        return self._df.sort_values(column_name, ascending=False)
 
     def _print_top_results(self, dic: Dict, sorted_dic: List) -> None:
         counter = 0
@@ -50,6 +65,7 @@ class Analytics:
 
 if __name__ == "__main__":
     analytics = Analytics()
-    analytics.search_top_skills()
-    analytics.search_top_locations()
-    analytics.search_top_skills_acc_to_highest_stipend()
+    # analytics.search_top_skills()
+    # analytics.search_top_locations()
+    # analytics.search_top_skills_acc_to_highest_stipend()
+    analytics.search_top_skills_acc_to_applicants_number()
