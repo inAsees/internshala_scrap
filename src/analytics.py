@@ -7,7 +7,7 @@ from pandas import DataFrame
 class Analytics:
     def __init__(self, file_path=r"C:\Users\DELL\Desktop\scrap_for_python\only_python_scrap.csv"):
         self._file_path = file_path
-        self._max_counter = 10
+        self._max_limit = 10
         self._df = pd.read_csv(self._file_path)
         self._dic = {}
 
@@ -56,7 +56,7 @@ class Analytics:
     def _print_top_results(self, dic: Dict, sorted_dic: List) -> None:
         counter = 0
         for i, key in enumerate(sorted_dic):
-            if counter == self._max_counter:
+            if counter == self._max_limit:
                 break
             print(i + 1, key, "-->", dic[key])
             counter += 1
