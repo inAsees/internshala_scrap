@@ -18,7 +18,7 @@ class Analytics:
                 dic[j] = dic.get(j, 0) + 1
         sorted_dic = sorted(dic, key=dic.get, reverse=True)
         print("* Top 10 skills are listed below\n")
-        self._print(dic, sorted_dic)
+        self._print_top_results(dic, sorted_dic)
 
     def get_top_locations(self):
         df = pd.read_csv(self._file_path)
@@ -27,9 +27,9 @@ class Analytics:
             dic[i] = dic.get(i, 0) + 1
         sorted_dic = sorted(dic, key=dic.get, reverse=True)
         print("\n* Top 10 locations are listed below\n")
-        self._print(dic, sorted_dic)
+        self._print_top_results(dic, sorted_dic)
 
-    def _print(self, dic: Dict, sorted_dic: List):
+    def _print_top_results(self, dic: Dict, sorted_dic: List):
         counter = 0
         for i, key in enumerate(sorted_dic):
             if counter == self._max_counter:
