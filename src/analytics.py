@@ -3,7 +3,7 @@ from ast import literal_eval
 
 
 class Analytics:
-    def __init__(self, file_path=r"C:\Users\DELL\Desktop\scrap_for_computer_science.csv"):
+    def __init__(self, file_path=r"C:\Users\DELL\Desktop\scrap_for_python\only_python_scrap.csv"):
         self._file_path = file_path
         self._max_counter = 10
 
@@ -17,14 +17,28 @@ class Analytics:
                     continue
                 dic[j] = dic.get(j, 0) + 1
         sorted_dic = sorted(dic, key=dic.get, reverse=True)
-        print("Top 10 skills are listed below\n")
-        for key in sorted_dic:
+        print("* Top 10 skills are listed below\n")
+        for i, key in enumerate(sorted_dic):
             if counter == self._max_counter:
                 break
-            print(key, dic[key])
+            print(i + 1, key, "-->", dic[key])
             counter += 1
 
+    def get_top_locations(self):
+        counter = 0
+        df = pd.read_csv(self._file_path)
+        dic = {}
+        for i in df["location"].values:
+            dic[i] = dic.get(i, 0) + 1
+        sorted_dic = sorted(dic, key=dic.get, reverse=True)
+        print("\n* Top 10 locations are listed below\n")
+        for i, key in enumerate(sorted_dic):
+            if counter == self._max_counter:
+                break
+            print(i + 1, key, "-->", dic[key])
+            counter += 1
 
 if __name__ == "__main__":
     analytics = Analytics()
     analytics.get_top_skills()
+    analytics.get_top_locations()
