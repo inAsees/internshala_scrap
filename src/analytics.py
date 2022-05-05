@@ -7,27 +7,30 @@ class Analytics:
     def __init__(self, file_path=r"C:\Users\DELL\Desktop\scrap_for_python\only_python_scrap.csv"):
         self._file_path = file_path
         self._max_counter = 10
+        self._df = pd.read_csv(self._file_path)
+        self._dic = {}
 
-    def get_top_skills(self):
-        dic = {}
-        df = pd.read_csv(self._file_path)
-        for i in df["skill_set"].values:
+    def search_top_skills(self):
+        self._dic = {}
+        for i in self._df["skill_set"].values:
             for j in literal_eval(i):
                 if j == "":
                     continue
-                dic[j] = dic.get(j, 0) + 1
-        sorted_dic = sorted(dic, key=dic.get, reverse=True)
+                self._dic[j] = self._dic.get(j, 0) + 1
+        sorted_dic = sorted(self._dic, key=self._dic.get, reverse=True)
         print("* Top 10 skills are listed below\n")
-        self._print_top_results(dic, sorted_dic)
+        self._print_top_results(self._dic, sorted_dic)
 
-    def get_top_locations(self):
-        df = pd.read_csv(self._file_path)
-        dic = {}
-        for i in df["location"].values:
-            dic[i] = dic.get(i, 0) + 1
-        sorted_dic = sorted(dic, key=dic.get, reverse=True)
+    def search_top_locations(self):
+        self._dic = {}
+        for i in self._df["location"].values:
+            self._dic[i] = self._dic.get(i, 0) + 1
+        sorted_dic = sorted(self._dic, key=self._dic.get, reverse=True)
         print("\n* Top 10 locations are listed below\n")
-        self._print_top_results(dic, sorted_dic)
+        self._print_top_results(self._dic, sorted_dic)
+
+    def search_top_skills_acc_to_highest_stipend(self):
+        self._dic = {}
 
     def _print_top_results(self, dic: Dict, sorted_dic: List):
         counter = 0
@@ -40,5 +43,5 @@ class Analytics:
 
 if __name__ == "__main__":
     analytics = Analytics()
-    analytics.get_top_skills()
-    analytics.get_top_locations()
+    analytics.search_top_skills()
+    analytics.search_top_locations()
