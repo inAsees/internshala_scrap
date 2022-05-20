@@ -88,15 +88,17 @@ class ScrapInternshala:
                  "number_of_openings": ele.number_of_openings,
                  "skill_set": ele.skill_set,
                  "perks": ele.perks,
-                 "src_url": ele.src_url})
+                 "src_url": ele.src_url
+                 }
+            )
 
     def _scrap_url(self, url: str, page_no: int) -> None:
         page_src = req.get(url).text
         page_soup = bs(page_src, "html.parser")
-        companies_box = page_soup.findAll("a", {"class": "view_detail_button"})
+        companies_box = page_soup.findAll("div", {"class": "heading_4_5 profile"})
 
         for company in tqdm(companies_box, desc="Scrapping page {} companies.".format(page_no)):
-            details_url = self._base_url + company["href"]
+            details_url = self._base_url + company.a.get("href")
             company_details_src = req.get(details_url).text
             company_details_soup = bs(company_details_src, "html.parser")
             company_info = self._parse_company_info(company_details_soup, details_url)
