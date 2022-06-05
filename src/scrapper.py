@@ -1,11 +1,11 @@
 import csv
-from typing import Optional
 from csv import DictWriter
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 import requests as req
 from bs4 import BeautifulSoup as bs
 from bs4.element import ResultSet
+from datetime import date
 from tqdm import tqdm
 import logging
 from src.get_stipend import GetStipend
@@ -25,6 +25,7 @@ class AttemptsHandler:
 
 @dataclass
 class CompanyInfo:
+    internship_id: str
     job_title: str
     company: str
     monthly_lump_sum: int
@@ -32,7 +33,7 @@ class CompanyInfo:
     incentive: str
     duration_in_days: int
     location: str
-    apply_by: str
+    apply_by: date
     applicants: int
     number_of_openings: int
     skill_set: List[str]
@@ -55,17 +56,15 @@ class ScrapInternshala:
             self._scrap_url(url, page_no)
             page_no += 1
 
-    def dump(self, file_path: str) -> Optional[bool]:
-        try:
-            with open(file_path, "w", encoding="utf-8", newline="") as f:
-                writer = csv.DictWriter(f, fieldnames=["job_title", "company", "monthly_lump_sum", "weekly_lump_sum",
-                                                       "incentive", "duration_in_days", "location", "apply_by",
-                                                       "applicants", "number_of_openings", "skill_set", "perks",
-                                                       "src_url", ])
-                writer.writeheader()
-                self._write_file(writer)
-        except PermissionError:
-            return True
+    def dump(self, file_path: str) -> None:
+        with open(file_path, "w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=["internship_id", "job_title", "company", "monthly_lump_sum",
+                                                   "weekly_lump_sum",
+                                                   "incentive", "duration_in_days", "location", "apply_by",
+                                                   "applicants", "number_of_openings", "skill_set", "perks",
+                                                   "src_url", ])
+            writer.writeheader()
+            self._write_file(writer)
 
     @staticmethod
     def _get_total_pages(url: str) -> int:
@@ -76,7 +75,8 @@ class ScrapInternshala:
     def _write_file(self, writer: DictWriter) -> None:
         for ele in tqdm(self._company_info_list, desc="Dumping..."):
             writer.writerow(
-                {"job_title": ele.job_title,
+                {"internship_id": ele.internship_id,
+                 "job_title": ele.job_title,
                  "company": ele.company,
                  "monthly_lump_sum": ele.monthly_lump_sum,
                  "weekly_lump_sum": ele.weekly_lump_sum,
@@ -106,21 +106,28 @@ class ScrapInternshala:
 
     @classmethod
     def _parse_company_info(cls, company_soup: bs, detail_url: str) -> CompanyInfo:
+        internship_id = cls._get_internship_id(company_soup)
         job_title = company_soup.find("span", {"class": "profile_on_detail_page"}).text.strip()
         company = company_soup.find("a", {"class": "link_display_like_text"}).text.strip()
         m_stipend, w_stipend = GetStipend.get_stipend(company_soup.find("span", {"class": "stipend"}).text)
         incentive = cls._get_incentive(company_soup.findAll("i"))
         duration_in_days = cls._get_duration(company_soup.findAll("div", {"class": "item_body"}))
         location = company_soup.find("a", {"class": "location_link"}).text.strip()
-        apply_by = cls._get_apply_by(company_soup.findAll("div", {"class": "item_body"}))
+        apply_by = cls._get_apply_by(company_soup)
         applicants = cls._get_applicants(company_soup.find("div", {"class": "applications_message"}).text.strip())
         number_of_openings = cls._get_number_of_openings(company_soup.findAll("div", {"class": "text-container"}))
         skill_set = cls._get_skills_set(company_soup)
         perks = cls._get_perks(company_soup)
         src_url = detail_url
 
-        return CompanyInfo(job_title, company, m_stipend, w_stipend, incentive, duration_in_days, location, apply_by,
-                           applicants, number_of_openings, skill_set, perks, src_url)
+        print(detail_url)
+
+        return CompanyInfo(internship_id, job_title, company, m_stipend, w_stipend, incentive, duration_in_days,
+                           location, apply_by, applicants, number_of_openings, skill_set, perks, src_url)
+
+    @staticmethod
+    def _get_internship_id(company_soup: bs) -> str:
+        return company_soup.find("div", {"class": "detail_view"}).div.attrs["internshipid"]
 
     @staticmethod
     def _get_applicants(raw_text: str) -> int:
@@ -180,12 +187,17 @@ class ScrapInternshala:
                 logging.info(i.text)
 
     @staticmethod
-    def _get_apply_by(company_soup: ResultSet) -> str:
-        for apply in company_soup:
-            if "'" in apply.text:
-                return apply.text.strip()
-            else:
-                logging.info(apply.text)
+    def _get_apply_by(company_soup: bs) -> Optional[date]:
+        months = {"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6, "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10,
+                  "Nov": 11, "Dec": 12}
+        res = company_soup.find("div", {
+            "class": ["other_detail_item apply_by", "other_detail_item large_stipend_text apply_by"]}).find("div", {
+            "class": "item_body"}).text
+        if res == "Not Provided":
+            return None
+        final = res.replace("'", "").split()
+        d = date(date.today().year, months[final[1]], int(final[0]))
+        return d
 
     @staticmethod
     def _get_incentive(company_soup: ResultSet) -> str:
