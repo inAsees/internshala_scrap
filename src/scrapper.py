@@ -120,8 +120,6 @@ class ScrapInternshala:
         perks = cls._get_perks(company_soup)
         src_url = detail_url
 
-        print(detail_url)
-
         return CompanyInfo(internship_id, job_title, company, m_stipend, w_stipend, incentive, duration_in_days,
                            location, apply_by, applicants, number_of_openings, skill_set, perks, src_url)
 
